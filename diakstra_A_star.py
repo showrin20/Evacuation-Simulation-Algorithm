@@ -31,6 +31,7 @@ RESIDENT = 1
 CYCLONE = 2
 SHELTER = 3
 
+
 # Define class for residents
 class Resident(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -48,6 +49,7 @@ class Resident(pygame.sprite.Sprite):
             self.rect.x = next_cell[1] * cell_size
             self.rect.y = next_cell[0] * cell_size
 
+
 # Define class for shelters
 class Shelter(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -59,6 +61,7 @@ class Shelter(pygame.sprite.Sprite):
         self.rect.y = y * cell_size
         self.capacity = 100  # Shelter capacity
         self.residents = 0  # Number of residents currently in the shelter
+
 
 # Create groups for sprites
 all_sprites = pygame.sprite.Group()
@@ -78,25 +81,31 @@ for i in range(grid_size):
 shelters = [Shelter(5, 5), Shelter(15, 5)]  # Example shelter locations
 
 # Define simulation duration (in seconds)
-simulation_duration = 120  # 2 minutes
+simulation_duration = 200  # 2 minutes
 
 # Calculate the number of frames needed to achieve the desired duration
-frames_per_second = 30  # Adjust this value to control the simulation speed
+frames_per_second =  40# Adjust this value to control the simulation speed
 total_frames = simulation_duration * frames_per_second
+
 
 # Define heuristic function for A*
 def heuristic(node, goal):
     return math.sqrt((node[0] - goal[0]) ** 2 + (node[1] - goal[1]) ** 2)
 
+
 # Find nearest shelter using A*
 def find_nearest_shelter_a_star(resident):
     nearest_shelter = None
-    min_distance = float('inf')
+    min_distance = float("inf")
     for shelter in shelters:
         if shelter.capacity <= shelter.residents:
             continue
-        path = astar(grid, (resident.rect.y // cell_size, resident.rect.x // cell_size), (shelter.rect.y // cell_size, shelter.rect.x // cell_size))
-        
+        path = astar(
+            grid,
+            (resident.rect.y // cell_size, resident.rect.x // cell_size),
+            (shelter.rect.y // cell_size, shelter.rect.x // cell_size),
+        )
+
         if path:
             distance = len(path)
             if distance < min_distance:
@@ -108,15 +117,16 @@ def find_nearest_shelter_a_star(resident):
         nearest_shelter.residents += 1
     return nearest_shelter
 
+
 # A* algorithm implementation
 def astar(grid, start, goal):
     open_list = []
     closed_set = set()
     came_from = {}
 
-    g_score = {(node[0], node[1]): float('inf') for node in grid}
+    g_score = {(node[0], node[1]): float("inf") for node in grid}
     g_score[start] = 0
-    f_score = {(node[0], node[1]): float('inf') for node in grid}
+    f_score = {(node[0], node[1]): float("inf") for node in grid}
     f_score[start] = heuristic(start, goal)
 
     heapq.heappush(open_list, (f_score[start], start))
@@ -148,6 +158,7 @@ def astar(grid, start, goal):
 
     return None
 
+
 # Get possible neighboring cells
 def get_neighbors(node):
     x, y = node
@@ -158,6 +169,7 @@ def get_neighbors(node):
         x, y = neighbor
         if 0 <= x < grid_size and 0 <= y < grid_size:
             neighbors.append(neighbor)
+
 
 # Simulation loop
 running = True
@@ -186,24 +198,34 @@ while running:
     for i in range(grid_size):
         for j in range(grid_size):
             if grid[i][j] == RESIDENT:
-                pygame.draw.rect(screen, BLUE, (j * cell_size, i * cell_size, cell_size, cell_size))
+                pygame.draw.rect(
+                    screen, BLUE, (j * cell_size, i * cell_size, cell_size, cell_size)
+                )
             elif grid[i][j] == CYCLONE:
-                pygame.draw.rect(screen, RED, (j * cell_size, i * cell_size, cell_size, cell_size))
+                pygame.draw.rect(
+                    screen, RED, (j * cell_size, i * cell_size, cell_size, cell_size)
+                )
             elif grid[i][j] == SHELTER:
-                pygame.draw.rect(screen, GREEN, (j * cell_size, i * cell_size, cell_size, cell_size))
+                pygame.draw.rect(
+                    screen, GREEN, (j * cell_size, i * cell_size, cell_size, cell_size)
+                )
 
     # Draw paths
     for resident in residents:
         if resident.path:
             for cell in resident.path:
-                pygame.draw.rect(screen, WHITE, (cell[1] * cell_size, cell[0] * cell_size, cell_size, cell_size))
+                pygame.draw.rect(
+                    screen,
+                    WHITE,
+                    (cell[1] * cell_size, cell[0] * cell_size, cell_size, cell_size),
+                )
 
     # Update sprites
     all_sprites.update()
     all_sprites.draw(screen)
 
     pygame.display.flip()
-    clock.tick(30)  # Adjust the frame rate as needed
+    clock.tick(frames_per_second)  # Adjust the frame rate as needed
 
 # Quit pygame
 pygame.quit()
